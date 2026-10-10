@@ -1,5 +1,6 @@
 // Conexión directa navegador → impresora BLE (Chrome/Edge en escritorio y Android).
 import type { PrinterProtocol } from './types';
+import { writeChunk } from './bluetoothSupport';
 
 const CHUNK_SIZE = 100;
 const CHUNK_DELAY_MS = 20;
@@ -87,7 +88,7 @@ async function waitWhilePaused(isPaused: () => boolean) {
 
 export async function connectBrowserPrinter(): Promise<BrowserPrinter> {
   if (!isWebBluetoothAvailable()) {
-    throw new Error('Este navegador no soporta Web Bluetooth. Usa Chrome o Edge.');
+    throw new Error('Este navegador no puede conectarse a impresoras Bluetooth. En iPhone usa Bluefy; en Android o computador, Chrome.');
   }
   const device = await navigator.bluetooth.requestDevice({
     acceptAllDevices: true,
@@ -113,12 +114,9 @@ export async function connectBrowserPrinter(): Promise<BrowserPrinter> {
       for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
         await waitWhilePaused(isPaused);
         const chunk = data.slice(offset, offset + CHUNK_SIZE);
-        if (withoutResponse) {
-          await characteristic.writeValueWithoutResponse(chunk);
-          await delay(CHUNK_DELAY_MS);
-        } else {
-          await characteristic.writeValueWithResponse(chunk);
-        }
+        await writeChunk(characteristic, chunk, withoutResponse);
+        // Sin respuesta la impresora no confirma: una pausa evita llenar su búfer.
+        if (withoutResponse) await delay(CHUNK_DELAY_MS);
       }
     },
     disconnect: () => server.disconnect(),

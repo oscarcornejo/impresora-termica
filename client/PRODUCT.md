@@ -51,8 +51,8 @@ ESC/POS estándar. El ticket se arma y previsualiza en la app y se imprime tal c
 - Intensidad de impresión ajustable y línea de corte para impresoras sin cortador.
 
 **Restricciones técnicas:**
-- Web Bluetooth exige contexto seguro (HTTPS o `localhost`) y Chrome/Edge. No existe en Safari ni en ningún
-  navegador de iPhone/iPad. Un celular que abre la app por `http://<ip-local>` **no puede imprimir**.
+- Web Bluetooth exige contexto seguro (HTTPS) y Chrome/Edge. No existe en Safari ni en los navegadores comunes de
+  iPhone/iPad: en iOS se imprime desde **Bluefy** (navegador gratuito con Web Bluetooth); la app lo indica.
 - Una sola cuenta del negocio (Supabase Auth); solo las cuentas en la tabla `members` acceden a los datos.
 - Impresoras Bluetooth clásico (SPP) no se pueden usar desde el navegador.
 - Las impresoras ESC/POS usan la tabla de caracteres PC850: el texto del comprobante debe limitarse a
@@ -61,7 +61,7 @@ ESC/POS estándar. El ticket se arma y previsualiza en la app y se imprime tal c
 
 **Decisiones abiertas (no inventar):**
 - **Registro de ventas / cierre del día:** hoy las ventas no se guardan.
-- **iPhone/iPad:** no pueden imprimir por Web Bluetooth; falta definir si se necesitan.
+- **App nativa para iPhone:** si Bluefy no basta, empaquetar con Capacitor y un plugin BLE nativo.
 
 ## Brand Commitments
 
