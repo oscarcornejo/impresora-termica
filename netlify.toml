@@ -1,4 +1,5 @@
-# Sitio estático: la app corre entera en el navegador (datos en el dispositivo, impresión por Web Bluetooth).
+# Sitio estático: datos en Supabase (copia en el dispositivo para vender sin conexión), impresión por Web Bluetooth.
+# Variables a definir en Netlify → Site configuration → Environment variables: VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.
 [build]
   command = "npm run build -w client"
   publish = "client/dist"
@@ -11,7 +12,7 @@
   [headers.values]
     # data:/blob: para el QR de la vista previa y las imágenes que se cargan en el Diseñador;
     # 'unsafe-inline' en estilos por los atributos style que usa React en la vista previa del papel.
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "bluetooth=(self), camera=(), microphone=(), geolocation=()"

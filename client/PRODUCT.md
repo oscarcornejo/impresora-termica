@@ -35,8 +35,9 @@ ESC/POS estándar. El ticket se arma y previsualiza en la app y se imprime tal c
 - **Impresora actual:** YT01 (cat printer BLE, papel de 58 mm / 384 puntos, sin cortador; se rasga a mano en
   el borde dentado). Funciona con batería; con poca carga imprime pálido.
 - **Conexión:** la impresora se conecta por Web Bluetooth desde Chrome/Edge, y el navegador arma los datos de
-  impresión. La app es un sitio estático en Netlify (HTTPS); productos y datos del negocio se guardan en el
-  navegador de cada dispositivo. Abre sin internet después de la primera visita (service worker).
+  impresión. La app es un sitio estático en Netlify (HTTPS); productos y datos del negocio están en Supabase,
+  compartidos entre dispositivos, con una cuenta compartida del negocio. Cada dispositivo guarda una copia del
+  catálogo para vender sin señal; editar productos requiere conexión.
 - **Flujo de venta:** pestaña *Vender* → tocar productos → ajustar cantidades → *Imprimir comprobante* →
   *Nueva venta*. Catálogo y datos del negocio en *Productos*. Editor libre en *Diseñador*.
 
@@ -52,18 +53,15 @@ ESC/POS estándar. El ticket se arma y previsualiza en la app y se imprime tal c
 **Restricciones técnicas:**
 - Web Bluetooth exige contexto seguro (HTTPS o `localhost`) y Chrome/Edge. No existe en Safari ni en ningún
   navegador de iPhone/iPad. Un celular que abre la app por `http://<ip-local>` **no puede imprimir**.
-- Cada dispositivo tiene su propio catálogo (no se comparte entre celulares). Borrar los datos del sitio en el
-  navegador borra los productos.
+- Una sola cuenta del negocio (Supabase Auth); solo las cuentas en la tabla `members` acceden a los datos.
 - Impresoras Bluetooth clásico (SPP) no se pueden usar desde el navegador.
 - Las impresoras ESC/POS usan la tabla de caracteres PC850: el texto del comprobante debe limitarse a
   caracteres representables (acentos y ñ sí; `…`, espacios especiales de `Intl`, emojis no).
 - Precios en CLP, sin decimales.
 
 **Decisiones abiertas (no inventar):**
-- **Uso simultáneo:** si varias personas cobran a la vez compartiendo catálogo.
 - **Registro de ventas / cierre del día:** hoy las ventas no se guardan.
 - **iPhone/iPad:** no pueden imprimir por Web Bluetooth; falta definir si se necesitan.
-- **Respaldo del catálogo:** hoy no hay forma de exportarlo ni de pasarlo a otro dispositivo.
 
 ## Brand Commitments
 

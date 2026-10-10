@@ -32,7 +32,7 @@ export function PrinterSheet({ isOpen, onClose, children }: PrinterSheetProps) {
     >
       <div className="sheet-body">
         <header className="sheet-head">
-          <h2 id="printer-sheet-title">Impresora y papel</h2>
+          <h2 id="printer-sheet-title">Ajustes</h2>
           <button type="button" className="icon sheet-close" onClick={onClose} aria-label="Cerrar">
             <Icon name="close" />
           </button>

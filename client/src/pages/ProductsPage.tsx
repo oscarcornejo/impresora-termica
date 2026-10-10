@@ -12,7 +12,7 @@ interface ProductsPageProps {
 }
 
 export function ProductsPage({ business, onBusinessSave }: ProductsPageProps) {
-  const { products, search, setSearch, isLoading, error, save, remove } = useProducts();
+  const { products, search, setSearch, isLoading, isOffline, error, save, remove } = useProducts();
   const [editing, setEditing] = useState<Product | null>(null);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -58,6 +58,7 @@ export function ProductsPage({ business, onBusinessSave }: ProductsPageProps) {
           />
         </div>
         {(error ?? actionError) && <p className="warning" role="alert">{error ?? actionError}</p>}
+        {isOffline && <p className="offline-note" role="status">Sin conexión: esta es la copia guardada en el dispositivo. Para agregar o editar productos hace falta internet.</p>}
         {!isLoading && products.length === 0 ? (
           <p className="empty">{listMessage}</p>
         ) : (

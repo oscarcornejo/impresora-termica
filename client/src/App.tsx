@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AccountPanel } from './components/AccountPanel';
 import { ConnectionPanel } from './components/ConnectionPanel';
 import { PaperPanel } from './components/PaperPanel';
 import { PrinterChip } from './components/PrinterChip';
@@ -21,7 +22,11 @@ const TABS: Array<[Tab, string]> = [
   ['designer', 'Diseñador'],
 ];
 
-export default function App() {
+interface AppProps {
+  account: { email: string; onSignOut: () => void };
+}
+
+export default function App({ account }: AppProps) {
   const printer = usePrinter();
   const { business, error: businessError, save: saveBusiness } = useBusiness();
   const [tab, setTab] = useState<Tab>('sale');
@@ -137,6 +142,7 @@ export default function App() {
           onCutChange={setCut}
           onDarknessChange={setDarkness}
         />
+        <AccountPanel email={account.email} onSignOut={account.onSignOut} />
       </PrinterSheet>
 
       <main className="layout">

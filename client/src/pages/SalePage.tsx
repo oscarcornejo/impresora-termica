@@ -24,7 +24,7 @@ interface SalePageProps {
 
 export function SalePage({ business, sale, onNewSale, controls, onEditInDesigner, onGoToProducts }: SalePageProps) {
   const { cart, updateCart: onCartChange } = sale;
-  const { products, search, setSearch, isLoading, error } = useProducts();
+  const { products, search, setSearch, isLoading, isOffline, error } = useProducts();
   // Cajón de la venta: solo aplica en pantallas angostas; en escritorio la venta siempre está a la vista.
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const isCartEmpty = cart.length === 0;
@@ -77,6 +77,7 @@ export function SalePage({ business, sale, onNewSale, controls, onEditInDesigner
           />
         </div>
         {error && <p className="warning" role="alert">{error}</p>}
+        {isOffline && <p className="offline-note" role="status">Sin conexión: vendes con el catálogo guardado en este dispositivo.</p>}
         {hasNoProducts && (
           <div className="empty">
             <p>Aún no hay productos cargados.</p>

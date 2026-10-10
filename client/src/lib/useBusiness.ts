@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { businessRepository } from './storage';
+import { businessRepository, loadBusiness } from './storage';
 import type { Business } from './types';
+
+const NO_BUSINESS = 'Sin los datos del negocio no se puede imprimir.';
 
 /** Datos del negocio para el encabezado del comprobante. `null` mientras cargan. */
 export function useBusiness() {
@@ -8,13 +10,9 @@ export function useBusiness() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.resolve()
-      .then(() => businessRepository().get())
-      .then(setBusiness)
-      // Sin estos datos no se puede armar el comprobante: el aviso dice la consecuencia y cómo reintentar.
-      .catch((err) =>
-        setError(err instanceof Error ? `${err.message} Sin los datos del negocio no se puede imprimir.` : 'No se cargaron los datos del negocio, así que todavía no se puede imprimir. Recarga la página para reintentar.'),
-      );
+    loadBusiness()
+      .then(({ data }) => setBusiness(data))
+      .catch((err) => setError(err instanceof Error ? `${err.message} ${NO_BUSINESS}` : `No se cargaron los datos del negocio. ${NO_BUSINESS}`));
   }, []);
 
   const save = useCallback(async (input: Business) => {
