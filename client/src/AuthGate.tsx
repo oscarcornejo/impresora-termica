@@ -1,10 +1,11 @@
 import App from './App';
 import { AuthMessage, LoginScreen } from './components/LoginScreen';
 import { useAuth } from './lib/useAuth';
+import { webData } from './lib/storage';
 
 /** Muestra la app solo con una sesión autorizada; si no, la entrada o el motivo. */
 export function AuthGate() {
-  const { state, signIn, signOut } = useAuth();
+  const { state, signIn, signOut } = useAuth(webData);
 
   switch (state.status) {
     case 'checking':

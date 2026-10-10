@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { pixelsToBits, bytesToBase64 } from './image';
+import { pixelsToBits, bytesToBase64 } from './bits';
 
 function solid(width: number, height: number, rgba: [number, number, number, number]) {
   const data = new Uint8ClampedArray(width * height * 4);

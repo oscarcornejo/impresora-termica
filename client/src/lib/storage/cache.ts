@@ -1,13 +1,13 @@
 // Copia local de lo último leído de la base: permite vender sin conexión en la feria.
 import type { z } from 'zod';
 import { OfflineError } from '../supabase/errors';
-import { readJson, writeJson } from './store';
+import { readJson, writeJson, type SyncStorage } from './store';
 
 export const CATALOG_CACHE_KEY = 'impresora-termica:cache:products:v1';
 export const BUSINESS_CACHE_KEY = 'impresora-termica:cache:business:v1';
 
 interface LoadOptions<T> {
-  storage: Storage;
+  storage: SyncStorage;
   key: string;
   schema: z.ZodType<T, z.ZodTypeDef, unknown>;
   load: () => Promise<T>;
@@ -37,6 +37,6 @@ export async function loadWithCache<T>({ storage, key, schema, load }: LoadOptio
 }
 
 /** Al cerrar sesión: que el próximo en usar el dispositivo no vea el catálogo. */
-export function clearCaches(storage: Storage): void {
+export function clearCaches(storage: SyncStorage): void {
   [CATALOG_CACHE_KEY, BUSINESS_CACHE_KEY].forEach((key) => storage.removeItem(key));
 }

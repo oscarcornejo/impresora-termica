@@ -10,6 +10,7 @@ import { ProductsPage } from "./pages/ProductsPage";
 import { DesignerPage } from "./pages/DesignerPage";
 import { usePrinter } from "./lib/usePrinter";
 import { useBusiness } from "./lib/useBusiness";
+import { webData } from "./lib/storage";
 import { sampleReceipt } from "./lib/blocks";
 import { useSaleSession } from "./lib/saleSession";
 import {
@@ -33,7 +34,7 @@ interface AppProps {
 
 export default function App({ account }: AppProps) {
   const printer = usePrinter();
-  const { business, error: businessError, save: saveBusiness } = useBusiness();
+  const { business, error: businessError, save: saveBusiness } = useBusiness(webData);
   const [tab, setTab] = useState<Tab>("sale");
   const [paperWidth, setPaperWidth] = useState<PaperWidth>(58);
   const [cut, setCut] = useState(false);

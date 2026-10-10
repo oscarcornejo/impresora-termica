@@ -1,0 +1,14 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "paths": {
+      "@core/*": ["../client/src/lib/*"],
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"],
+      "zod": ["./node_modules/zod"],
+      "react": ["./node_modules/@types/react"],
+      "qrcode": ["./node_modules/@types/qrcode"]
+    }
+  },
+  "include": ["index.js", "src/**/*.ts", "src/**/*.tsx", "__tests__/**/*.ts", "__tests__/**/*.tsx"],
+  "exclude": ["**/node_modules", "**/Pods"]
+}

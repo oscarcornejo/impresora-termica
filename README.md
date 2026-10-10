@@ -22,9 +22,11 @@ npm run build      # client/dist
 
 - **Impresión:** Chrome/Edge se conecta a la impresora por Web Bluetooth y el navegador arma los bytes
   (`client/src/lib/encoding/`: ESC/POS y protocolo cat). Web Bluetooth exige HTTPS (o `localhost`).
-- **iPhone/iPad:** Safari y los demás navegadores de iOS no tienen Web Bluetooth. Se usa
-  [Bluefy](https://apps.apple.com/app/id1492822055) (gratis), que sí lo trae: la app lo detecta y muestra cómo
-  instalarlo y abrir la página ahí. La escritura usa `writeValue` cuando faltan los métodos nuevos.
+- **iPhone/iPad:** Safari y los demás navegadores de iOS no tienen Web Bluetooth. Hay una app nativa en
+  React Native (`mobile/`, ver [mobile/README.md](mobile/README.md)) que se conecta por Bluetooth directo y usa
+  la misma base de datos y el mismo código de carrito, comprobante y protocolos (`client/src/lib/`). Como
+  alternativa sin instalar nada propio queda [Bluefy](https://apps.apple.com/app/id1492822055), un navegador
+  con Web Bluetooth: la web lo detecta y muestra cómo usarlo.
 - **Datos:** productos y datos del negocio en Supabase (`client/src/lib/supabase/`), compartidos por todos los
   dispositivos. Solo las cuentas registradas en la tabla `members` pueden leer y escribir (Row Level Security).
 - **Sin internet:** un service worker (vite-plugin-pwa) guarda la app, y cada dispositivo guarda una copia del

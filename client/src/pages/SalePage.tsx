@@ -4,6 +4,7 @@ import { CheckoutBar } from '../components/CheckoutBar';
 import { ReceiptPreview } from '../components/ReceiptPreview';
 import { Icon } from '../components/Icon';
 import { useProducts } from '../lib/useProducts';
+import { webData } from '../lib/storage';
 import { addProduct, cartCount, cartTotal, changeQuantity, lineTotal, quantityOf, removeLine } from '../lib/cart';
 import { withTearLine } from '../lib/blocks';
 import { formatPrice } from '../lib/money';
@@ -24,7 +25,7 @@ interface SalePageProps {
 
 export function SalePage({ business, sale, onNewSale, controls, onEditInDesigner, onGoToProducts }: SalePageProps) {
   const { cart, updateCart: onCartChange } = sale;
-  const { products, search, setSearch, isLoading, isOffline, error } = useProducts();
+  const { products, search, setSearch, isLoading, isOffline, error } = useProducts(webData);
   // Cajón de la venta: solo aplica en pantallas angostas; en escritorio la venta siempre está a la vista.
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const isCartEmpty = cart.length === 0;

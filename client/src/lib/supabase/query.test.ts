@@ -1,12 +1,23 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { query } from './query';
+import { query, setOfflineCheck } from './query';
 import { OfflineError } from './errors';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  setOfflineCheck(null);
+});
 
 describe('consultas a la base', () => {
   test('sin red conocida falla al instante sin llamar a la base', async () => {
     vi.stubGlobal('navigator', { onLine: false });
+    const run = vi.fn();
+    await expect(query(run)).rejects.toBeInstanceOf(OfflineError);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  test('usa el detector de red de la plataforma cuando se configura (iPhone: sin navigator.onLine)', async () => {
+    vi.stubGlobal('navigator', {});
+    setOfflineCheck(() => true);
     const run = vi.fn();
     await expect(query(run)).rejects.toBeInstanceOf(OfflineError);
     expect(run).not.toHaveBeenCalled();

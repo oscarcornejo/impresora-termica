@@ -1,20 +1,11 @@
 // Conexión directa navegador → impresora BLE (Chrome/Edge en escritorio y Android).
 import type { PrinterProtocol } from './types';
 import { writeChunk } from './bluetoothSupport';
+import { CHUNK_DELAY_MS, CHUNK_SIZE, flowControlState, isCatPrinterName, sendInChunks } from './printerLink';
 
-const CHUNK_SIZE = 100;
-const CHUNK_DELAY_MS = 20;
-const PAUSE_POLL_MS = 50;
-const MAX_PAUSE_MS = 15000;
-
-// "Cat printers": protocolo propio (solo imágenes), servicio 0xAE30.
-const CAT_PRINTER_NAME = /^(YT01|GB0[1-3]|GT01|MX\d{2})/i;
 const CAT_SERVICE = 0xae30;
 const CAT_WRITE = 0xae01;
 const CAT_NOTIFY = 0xae02;
-// Paquete de control de flujo de la impresora: 51 78 AE 00 01 00 <estado> … (0x10 = pausa, 0x00 = seguir).
-const FLOW_CONTROL_CMD = 0xae;
-const FLOW_PAUSE = 0x10;
 
 // Servicios GATT habituales en impresoras térmicas; deben declararse para poder usarlos.
 const PRINTER_SERVICES: BluetoothServiceUUID[] = [
@@ -38,9 +29,7 @@ export interface BrowserPrinter {
 export const isWebBluetoothAvailable = () =>
   typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 
-export const isCatPrinterName = (name: string | undefined) => CAT_PRINTER_NAME.test(name ?? '');
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export { isCatPrinterName };
 
 async function findWritableCharacteristic(server: BluetoothRemoteGATTServer) {
   const services = await server.getPrimaryServices();
@@ -69,21 +58,12 @@ async function openCatChannel(server: BluetoothRemoteGATTServer): Promise<CatCha
   if (notify) {
     notify.addEventListener('characteristicvaluechanged', () => {
       const value = notify.value;
-      if (value && value.byteLength > 6 && value.getUint8(2) === FLOW_CONTROL_CMD) {
-        paused = value.getUint8(6) === FLOW_PAUSE;
-      }
+      const state = value ? flowControlState(new Uint8Array(value.buffer, value.byteOffset, value.byteLength)) : null;
+      if (state) paused = state === 'pause';
     });
     await notify.startNotifications().catch(() => {});
   }
   return { write, isPaused: () => paused };
-}
-
-async function waitWhilePaused(isPaused: () => boolean) {
-  const start = Date.now();
-  while (isPaused()) {
-    if (Date.now() - start > MAX_PAUSE_MS) throw new Error('La impresora dejó de responder. Revisa que tenga papel y batería, y vuelve a intentar.');
-    await delay(PAUSE_POLL_MS);
-  }
 }
 
 export async function connectBrowserPrinter(): Promise<BrowserPrinter> {
@@ -110,15 +90,13 @@ export async function connectBrowserPrinter(): Promise<BrowserPrinter> {
     name: device.name ?? 'Impresora BLE',
     protocol: cat ? 'cat' : 'escpos',
     isConnected: () => server.connected,
-    write: async (data) => {
-      for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
-        await waitWhilePaused(isPaused);
-        const chunk = data.slice(offset, offset + CHUNK_SIZE);
-        await writeChunk(characteristic, chunk, withoutResponse);
-        // Sin respuesta la impresora no confirma: una pausa evita llenar su búfer.
-        if (withoutResponse) await delay(CHUNK_DELAY_MS);
-      }
-    },
+    write: (data) =>
+      sendInChunks(data, {
+        chunkSize: CHUNK_SIZE,
+        write: (chunk) => writeChunk(characteristic, chunk, withoutResponse),
+        pauseBetweenMs: withoutResponse ? CHUNK_DELAY_MS : 0,
+        isPaused,
+      }),
     disconnect: () => server.disconnect(),
   };
 }

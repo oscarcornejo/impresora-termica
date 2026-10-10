@@ -1,7 +1,7 @@
 // Dibuja el ticket completo como un bitmap 1-bpp, para impresoras que solo
 // entienden imágenes (protocolo "cat": YT01, GB01, MX05…).
 import QRCode from 'qrcode';
-import { bytesToBase64, pixelsToBits } from './image';
+import { bytesToBase64, pixelsToBits, type Pixels } from './bits';
 import type { Align, Block, ImageBlock, TextBlock } from './types';
 
 export const RASTER_DOTS = 384;
@@ -12,11 +12,26 @@ const FEED_LINE_DOTS = 24;
 const QR_MARGIN_DOTS = 8;
 // Umbral alto: los bordes suavizados del texto cuentan como negro y los trazos salen más gruesos.
 const TEXT_THRESHOLD = 190;
-const FONT_FAMILY = 'Menlo, ui-monospace, "SF Mono", Consolas, monospace';
+
+/**
+ * Lienzo donde se dibuja el ticket: fondo blanco, todo se pinta en negro.
+ * En el navegador es un <canvas>; en la app de iPhone, Skia.
+ */
+export interface RasterCanvas {
+  /** Fuente monoespaciada del tamaño indicado, en puntos. */
+  setFont: (size: number, isBold: boolean) => void;
+  measureText: (text: string) => number;
+  /** Dibuja `text` con su borde superior en `top`, sin pasar de `maxWidth`. */
+  fillText: (text: string, x: number, top: number, maxWidth: number) => void;
+  fillRect: (x: number, y: number, width: number, height: number) => void;
+  getPixels: () => Pixels;
+}
+
+export type CreateRasterCanvas = (width: number, height: number) => RasterCanvas;
 
 interface Piece {
   height: number;
-  draw: (ctx: CanvasRenderingContext2D, y: number) => void;
+  draw: (ctx: RasterCanvas, y: number) => void;
 }
 
 /** Corta una línea en trozos de `maxChars`, como hace la impresora al llegar al borde. */
@@ -42,10 +57,9 @@ function textPiece(block: Pick<TextBlock, 'text' | 'align' | 'bold' | 'underline
   return {
     height: lines.length * lineHeight,
     draw: (ctx, y) => {
-      ctx.font = `${block.bold ? 700 : 400} ${fontSize}px ${FONT_FAMILY}`;
-      ctx.textBaseline = 'top';
+      ctx.setFont(fontSize, block.bold);
       lines.forEach((line, i) => {
-        const textWidth = Math.min(ctx.measureText(line).width, RASTER_DOTS);
+        const textWidth = Math.min(ctx.measureText(line), RASTER_DOTS);
         const x = alignX(block.align, textWidth);
         const top = y + i * lineHeight;
         ctx.fillText(line, x, top + (lineHeight - fontSize) / 2, RASTER_DOTS);
@@ -107,24 +121,15 @@ function toPiece(block: Block): Piece {
 }
 
 /** Convierte todos los bloques en un único bloque de imagen de 384 puntos de ancho. */
-export function rasterizeBlocks(blocks: Block[]): ImageBlock {
+export function rasterizeBlocks(blocks: Block[], createCanvas: CreateRasterCanvas): ImageBlock {
   const pieces = blocks.map(toPiece);
   const height = Math.max(1, pieces.reduce((sum, p) => sum + p.height, 0));
-
-  const canvas = document.createElement('canvas');
-  canvas.width = RASTER_DOTS;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('El navegador no pudo crear el lienzo para dibujar el ticket');
-
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, RASTER_DOTS, height);
-  ctx.fillStyle = '#000';
+  const canvas = createCanvas(RASTER_DOTS, height);
   pieces.reduce((y, piece) => {
-    piece.draw(ctx, y);
+    piece.draw(canvas, y);
     return y + piece.height;
   }, 0);
 
-  const bits = pixelsToBits(ctx.getImageData(0, 0, RASTER_DOTS, height), false, TEXT_THRESHOLD);
+  const bits = pixelsToBits(canvas.getPixels(), false, TEXT_THRESHOLD);
   return { type: 'image', width: RASTER_DOTS, height, data: bytesToBase64(bits), align: 'left' };
 }

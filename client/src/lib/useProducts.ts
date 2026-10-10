@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { loadCatalog, productRepository } from './storage';
+import type { DataAccess } from './dataAccess';
 import { searchProducts } from './productSearch';
 import type { Product, ProductInput } from './types';
 
 const errorMessage = (err: unknown) => (err instanceof Error ? err.message : 'Error inesperado');
 
 /** Catálogo desde la base (o la copia del dispositivo sin conexión), con búsqueda en memoria. */
-export function useProducts() {
+export function useProducts(data: Pick<DataAccess, 'loadCatalog' | 'productRepository'>) {
   const [all, setAll] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [version, setVersion] = useState(0);
@@ -16,7 +16,7 @@ export function useProducts() {
 
   useEffect(() => {
     let isCancelled = false;
-    loadCatalog()
+    data.loadCatalog()
       .then(({ data, isOffline: offline }) => {
         if (isCancelled) return;
         setAll(data);
@@ -28,7 +28,7 @@ export function useProducts() {
     return () => {
       isCancelled = true;
     };
-  }, [version]);
+  }, [data, version]);
 
   const products = useMemo(() => searchProducts(all, search), [all, search]);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
@@ -36,20 +36,20 @@ export function useProducts() {
   // Lanzan el error para que el formulario lo muestre junto al campo.
   const save = useCallback(
     async (input: ProductInput, id?: number) => {
-      const repo = productRepository();
+      const repo = data.productRepository();
       const product = id ? await repo.update(id, input) : await repo.create(input);
       reload();
       return product;
     },
-    [reload],
+    [data, reload],
   );
 
   const remove = useCallback(
     async (id: number) => {
-      await productRepository().remove(id);
+      await data.productRepository().remove(id);
       reload();
     },
-    [reload],
+    [data, reload],
   );
 
   return { products, search, setSearch, isLoading, isOffline, error, save, remove };

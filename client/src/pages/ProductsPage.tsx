@@ -3,6 +3,7 @@ import { ProductForm } from '../components/ProductForm';
 import { BusinessForm } from '../components/BusinessForm';
 import { Icon } from '../components/Icon';
 import { useProducts } from '../lib/useProducts';
+import { webData } from '../lib/storage';
 import { formatPrice } from '../lib/money';
 import type { Business, Product } from '../lib/types';
 
@@ -12,7 +13,7 @@ interface ProductsPageProps {
 }
 
 export function ProductsPage({ business, onBusinessSave }: ProductsPageProps) {
-  const { products, search, setSearch, isLoading, isOffline, error, save, remove } = useProducts();
+  const { products, search, setSearch, isLoading, isOffline, error, save, remove } = useProducts(webData);
   const [editing, setEditing] = useState<Product | null>(null);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
