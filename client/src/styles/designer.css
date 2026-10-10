@@ -1,0 +1,79 @@
+/* ───── Diseñador ─────
+   Escritorio: el papel queda fijo al lado del editor, "lo que ves es lo que se imprime" mientras editas.
+   Angosto: barra fija abajo con "Vista previa" (cajón con el papel) e "Imprimir", como la barra de cobro. */
+.designer-page { grid-template-columns: minmax(0, 1fr); padding-bottom: 104px; }
+.block-actions button.icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+
+@media (min-width: 1024px) {
+  .page.designer-page { grid-template-columns: minmax(0, 1fr) 420px; padding-bottom: 0; }
+  .designer-page .col-preview {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100dvh - 117px);
+    align-items: center;
+  }
+  .col-preview .print-bar button.preview-toggle { display: none; }
+}
+
+@media (max-width: 1023px) {
+  .designer-page .col-preview {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    z-index: 10;
+    max-height: none;
+    gap: 0;
+    align-items: stretch;
+  }
+  .designer-page .preview-scroll { display: none; }
+  .designer-page .col-preview.is-open .preview-scroll {
+    display: flex;
+    justify-content: center;
+    max-height: min(58dvh, 620px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px 24px;
+    box-shadow: var(--shadow-drawer);
+    animation: sheet-up var(--duration-sheet) var(--ease-out);
+  }
+  .designer-page .print-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-bar);
+    padding: 12px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .designer-page .print-bar .primary { flex: 1; max-width: 420px; min-height: 52px; }
+  .designer-page .print-bar .preview-toggle { min-height: 52px; }
+  .designer-page .print-bar small, .designer-page .print-bar .link { flex-basis: 100%; text-align: right; }
+  .designer-page:has(.col-preview.is-open) { padding-bottom: calc(min(58dvh, 620px) + 104px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .designer-page .col-preview.is-open .preview-scroll { animation: none; }
+}
+
+/* Un checkbox nunca se encoge dentro de su etiqueta (a 320 px quedaba de 14 px) */
+input[type='checkbox'] { flex: none; }
+
+/* Táctil: 44 px en todo lo que se toca del Diseñador y del panel de impresora */
+@media (pointer: coarse) {
+  .add-bar button, .designer-page .editor-head .row button { min-height: 44px; }
+  .block-actions { gap: 4px; }
+  .block-actions button.icon { width: 44px; height: 44px; }
+  .segmented.small button { min-width: 48px; min-height: 44px; }
+  select, input:not([type='checkbox']):not([type='range']):not([type='file']) { min-height: 44px; }
+  input[type='range'] { height: 44px; }
+  label.inline { min-height: 44px; }
+  .sheet-close { width: 44px; height: 44px; }
+  button.link { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 4px; }
+}
+.preview-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-s); }

@@ -1,0 +1,47 @@
+/* Tokens: color, tipografía, sombras y movimiento. Se importa primero. */
+
+:root {
+  /* Siempre claro: se usa al aire libre, y con sol la pantalla clara con tinta oscura es la que se lee.
+     Neutros cálidos de papel térmico; un solo acento (rojo) reservado para la acción principal. */
+  --bg: #ece7de;
+  --surface: #fbfaf7;
+  --surface-2: #f1ece3;
+  --tile: #ffffff; /* lo más claro de la pantalla = lo que se toca */
+  --ink: #17150f;
+  --ink-soft: #514c43; /* 8:1 sobre surface */
+  --line: #d9d1c3; /* separadores */
+  --line-strong: #8a8174; /* bordes de controles: ≥3:1 sobre bg, surface y tile */
+  --accent: #b3341d; /* 6:1 con texto blanco */
+  --accent-hover: #992a16;
+  --accent-ink: #fff;
+  --ok: #1f6b3f;
+  --warn-bg: #fbeadb;
+  --warn-ink: #7a3f0a;
+  --disabled-bg: #e3ddd2;
+  --disabled-ink: #4f4a42; /* desactivado, pero legible: 6.5:1 */
+  --placeholder: #6a645a;
+  --paper: #fffefb;
+  --paper-ink: #111;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --shadow-paper: 0 1px 0 rgba(0, 0, 0, 0.04), 0 18px 40px -18px rgba(40, 30, 10, 0.35);
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 0.12); /* opción elegida de un control segmentado */
+  --shadow-float: 0 10px 30px rgb(0 0 0 / 0.3); /* avisos flotantes */
+  --shadow-bar: 0 -8px 24px -12px rgb(0 0 0 / 0.35); /* barras fijas abajo: cobro, imprimir */
+  --shadow-bar-soft: 0 -12px 20px -18px rgb(0 0 0 / 0.4); /* barra de cobro dentro de la columna de venta */
+  --shadow-drawer: 0 -12px 32px -16px rgb(0 0 0 / 0.45); /* cajones que suben sobre la barra */
+  --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Escala por rol, en rem para respetar el tamaño de letra del navegador.
+     Nada que haya que leer baja de 14 px: la app se usa de pie y al sol. */
+  --text-label: 0.8125rem; /* 13 px, solo en mayúsculas y seminegrita: rótulos de sección */
+  --text-meta: 0.875rem; /* 14 px: pistas, etiquetas de campos, estados, precios secundarios */
+  --text-body: 0.9375rem; /* 15 px: texto y controles */
+  --text-title: 1.0625rem; /* 17 px: títulos de panel y la acción de cobro */
+  --duration-fast: 140ms;
+  --duration-sheet: 220ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: only light;
+}

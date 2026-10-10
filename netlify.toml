@@ -1,0 +1,28 @@
+# Sitio estático: la app corre entera en el navegador (datos en el dispositivo, impresión por Web Bluetooth).
+[build]
+  command = "npm run build -w client"
+  publish = "client/dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # data:/blob: para el QR de la vista previa y las imágenes que se cargan en el Diseñador;
+    # 'unsafe-inline' en estilos por los atributos style que usa React en la vista previa del papel.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "bluetooth=(self), camera=(), microphone=(), geolocation=()"
+
+# El service worker no se guarda en caché: así cada publicación nueva llega a los celulares.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

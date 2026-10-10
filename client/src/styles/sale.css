@@ -1,0 +1,353 @@
+/* Vender: catálogo, carrito, barra de cobro y cajón de venta. Por orden de cascada también van aquí
+   las reglas táctiles generales, la barra superior angosta, avisos, barras de desplazamiento y el atajo al cobro. */
+
+/* Página Vender: catálogo a la izquierda, venta + comprobante a la derecha (o en cajón en pantallas angostas) */
+.sale-page {
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: 112px; /* espacio para la barra de cobro */
+}
+.sale-ticket { display: none; flex-direction: column; min-width: 0; min-height: 0; }
+.ticket-head { flex: none; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.ticket-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-top: 8px;
+}
+.sale-receipt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  /* Bandeja de salida: el papel blanco se separa del panel en vez de fundirse con él */
+  padding: 20px 12px 16px;
+  background: var(--bg);
+  border-radius: var(--radius-m);
+}
+/* Sin scroll vertical propio: el borde dentado del papel entra en el relleno inferior */
+.sale-receipt .preview-scroll { padding: 0 0 12px; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+
+@media (min-width: 1024px) {
+  /* Columna de ancho fijo (384 px de papel + relleno): la grilla no cambia al agregar el primer producto */
+  .sale-page { grid-template-columns: minmax(0, 1fr) 444px; }
+  .sale-dock { display: contents; }
+  .sale-ticket {
+    display: flex;
+    position: sticky;
+    top: 20px;
+    max-height: calc(100dvh - 220px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 1023px) {
+  /* El cajón y la barra viajan juntos, fijos abajo: el cajón nunca tapa el total ni la acción */
+  .sale-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+  }
+  .sale-dock .checkout-bar { position: relative; }
+  .sale-ticket.is-open {
+    display: flex;
+    max-height: min(52dvh, 560px);
+    overflow: hidden;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    padding: 16px max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+    box-shadow: var(--shadow-drawer);
+    animation: sheet-up var(--duration-sheet) var(--ease-out);
+  }
+  .ticket-head, .sale-ticket .cart, .sale-receipt { max-width: 720px; width: 100%; margin-inline: auto; }
+  .ticket-body { padding-bottom: 20px; }
+}
+
+
+/* Barra de cobro */
+.checkout-bar {
+  container: checkout / inline-size;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: var(--shadow-bar);
+  padding: 12px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.checkout-inner {
+  max-width: 1432px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.checkout-total { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
+.checkout-label { font-size: var(--text-meta); color: var(--ink-soft); white-space: nowrap; }
+.checkout-amount {
+  font-size: clamp(1.625rem, 5vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.checkout-action { min-height: 56px; padding: 0 24px; font-size: var(--text-title); white-space: nowrap; }
+.receipt-toggle { min-height: 56px; flex: none; }
+.checkout-notice { max-width: 1432px; margin: 6px auto 0; font-size: var(--text-meta); color: var(--ok); }
+
+/* Barra angosta (celular o columna de escritorio): total arriba; la acción principal a todo el ancho */
+@container checkout (max-width: 560px) {
+  .checkout-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'total toggle' 'action action';
+    gap: 10px 12px;
+  }
+  .checkout-total { grid-area: total; margin-right: 0; }
+  .receipt-toggle { grid-area: toggle; min-height: 48px; padding: 0 14px; }
+  .checkout-action { grid-area: action; width: 100%; }
+}
+@media (max-width: 559px) {
+  .sale-page { padding-bottom: 176px; }
+}
+
+/* Cantidades del carrito: botones rellenos y separados */
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--tile);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+.qty-btn:first-child { border-radius: var(--radius-s) 0 0 var(--radius-s); }
+.qty-btn:last-child { border-radius: 0 var(--radius-s) var(--radius-s) 0; }
+.qty-btn:hover:not(:disabled) { border-color: var(--ink); transform: none; }
+.qty-value {
+  min-width: 36px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-block: 1px solid var(--line-strong);
+  background: var(--tile);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.line-remove { width: 40px; height: 40px; padding: 0; }
+.cart-lines li .num { min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Pantallas táctiles: mínimo 44–48 px en todo lo que se toca */
+@media (pointer: coarse) {
+  .tabs button, .segmented button, .search, .sheet button:not(.link), .editor-head .secondary { min-height: 44px; }
+  .qty-btn, .line-remove { width: 48px; height: 48px; }
+  .qty-value { height: 48px; min-width: 40px; }
+  .printer-chip { min-height: 44px; }
+  label.check { min-height: 44px; }
+  input[type='checkbox'] { width: 22px; height: 22px; }
+}
+
+@media (max-width: 719px) {
+  .topbar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+  .topbar h1 { font-size: var(--text-title); }
+  .tabs { order: 3; width: 100%; }
+  .tabs button { flex: 1; }
+}
+/* Celulares muy angostos: conectada, basta el ícono y el punto verde para que quepa junto al título
+   (el nombre sigue en el aria-label). "Sin impresora" es un aviso y conserva su texto. */
+@media (max-width: 379px) {
+  .printer-chip.is-on { min-width: 44px; padding: 0 12px; }
+  .printer-chip.is-on .printer-chip-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sale-ticket.is-open { animation: none; }
+}
+
+/* Venta impresa y deshacer */
+.checkout-bar.is-done .checkout-label { color: var(--ok); font-weight: 600; }
+.checkout-undo {
+  max-width: 1432px;
+  margin: 8px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--text-meta);
+}
+.checkout-undo .link { min-height: 44px; padding: 0 4px; font-weight: 600; }
+
+/* Avisos: siempre sobre la barra de cobro; en Vender, arriba para no taparla */
+.toast { z-index: 30; }
+.toast.is-top { top: max(12px, env(safe-area-inset-top)); bottom: auto; }
+
+/* La fila de "Deshacer" agranda la barra: el final de la página no debe quedar tapado */
+.sale-page:has(.checkout-undo), .sale-page:has(.checkout-error) { padding-bottom: 176px; }
+@media (max-width: 559px) {
+  .sale-page:has(.checkout-undo), .sale-page:has(.checkout-error) { padding-bottom: 248px; }
+}
+
+/* Con el cajón abierto la página gana alto: todo el catálogo sigue alcanzable sobre el cajón */
+@media (max-width: 1023px) {
+  .sale-page:has(.sale-ticket.is-open) { padding-bottom: calc(min(52dvh, 560px) + 112px); }
+}
+@media (max-width: 559px) {
+  .sale-page:has(.sale-ticket.is-open) { padding-bottom: calc(min(52dvh, 560px) + 176px); }
+}
+
+/* Líneas del carrito: una fila si la columna es ancha; en dos filas si es angosta (columna de escritorio o celular) */
+@container cart (max-width: 400px) {
+  .cart-lines li { grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 6px; }
+  .cart-lines li .num { grid-column: 2; }
+  .cart-lines li .line-remove { grid-column: 3; grid-row: 1; }
+  .cart-lines li .qty { grid-column: 1; grid-row: 2; justify-self: start; }
+}
+
+/* Error de impresión junto a la acción; texto solo para lectores de pantalla */
+.checkout-error {
+  max-width: 1432px;
+  margin: 10px auto 0;
+  padding: 8px 12px;
+  font-size: var(--text-meta);
+  line-height: 1.35;
+  color: var(--warn-ink);
+  background: var(--warn-bg);
+  border-radius: var(--radius-s);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Barras de desplazamiento con la paleta */
+html, .ticket-body, .preview-scroll, .catalog { scrollbar-color: var(--line-strong) transparent; }
+.ticket-body, .catalog, .preview-scroll { scrollbar-width: thin; }
+
+/* Atajo de teclado al cobro: invisible hasta recibir foco */
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: 8px;
+  z-index: 40;
+  padding: 10px 16px;
+  border-radius: var(--radius-s);
+  background: var(--ink);
+  color: var(--tile);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible { transform: none; outline: 2px solid var(--accent); outline-offset: 2px; }
+.checkout-bar:focus { outline: none; }
+.checkout-bar:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* En escritorio la venta siempre está a la vista: "Ver venta" sobra. "Reimprimir" comparte la clase base y sí se muestra.
+   Más específico que button:has(> .icon-svg), que le da display: inline-flex. */
+@media (min-width: 1024px) {
+  .checkout-bar .checkout-inner button.ticket-toggle { display: none; }
+}
+
+/* ───── Escritorio: la columna derecha es el ticket completo, como en una caja ─────
+   Venta arriba (encabezado fijo), comprobante al medio (con scroll) y total + cobro abajo, siempre a la vista.
+   La pantalla Vender ocupa justo la ventana: cada columna desplaza lo suyo. */
+@media (min-width: 1024px) {
+  .app:has(.sale-page) { height: 100dvh; min-height: 0; }
+  .layout:has(> .sale-page) { min-height: 0; grid-template-rows: minmax(0, 1fr); align-content: stretch; }
+  .sale-page,
+  .sale-page:has(.checkout-undo),
+  .sale-page:has(.checkout-error) {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  /* El buscador queda fijo arriba; solo la grilla de productos desplaza */
+  .sale-catalog { min-height: 0; overflow: hidden; }
+  .catalog {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+    align-content: start;
+    grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+    gap: 10px;
+    padding: 2px; /* el anillo de foco de las baldosas no se recorta */
+    scrollbar-gutter: stable; /* la barra no pisa el borde de las baldosas */
+    margin: -2px;
+  }
+  .product-tile { min-height: 96px; padding: 14px 16px; gap: 8px; }
+  .product-name { font-size: 1rem; }
+  .product-price { font-size: var(--text-meta); }
+
+  .sale-dock {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+  .sale-ticket {
+    position: static;
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .ticket-head { padding: 14px 16px 10px; }
+  .ticket-body { flex: 1; padding: 8px 16px 16px; }
+  .sale-dock .checkout-bar {
+    position: static;
+    z-index: auto;
+    border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-bar-soft);
+    padding: 14px 16px 16px;
+  }
+  .sale-dock .checkout-amount { font-size: 2.125rem; }
+}
+
+/* Pocos productos, tarjetas grandes: más fáciles de tocar y el catálogo no queda perdido en el panel.
+   Con muchos productos vuelven al tamaño compacto para que quepan más a la vista. */
+.catalog[data-density='roomy'] .product-tile { min-height: 120px; padding: 16px 18px; gap: 10px; justify-content: space-between; }
+.catalog[data-density='roomy'] .product-name { font-size: 1.125rem; font-weight: 600; }
+.catalog[data-density='roomy'] .product-price { font-size: 1rem; }
+.catalog[data-density='comfortable'] .product-tile { min-height: 104px; padding: 14px 16px; justify-content: space-between; }
+.catalog[data-density='comfortable'] .product-name { font-size: var(--text-title); }
+.catalog[data-density='comfortable'] .product-price { font-size: var(--text-body); }
+
+@media (min-width: 1024px) {
+  .catalog[data-density='roomy'] { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .catalog[data-density='roomy'] .product-tile { min-height: 168px; padding: 20px 22px; }
+  .catalog[data-density='roomy'] .product-name { font-size: 1.375rem; line-height: 1.25; letter-spacing: -0.01em; }
+  .catalog[data-density='roomy'] .product-price { font-size: 1.125rem; }
+  .catalog[data-density='comfortable'] { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .catalog[data-density='comfortable'] .product-tile { min-height: 124px; padding: 18px 20px; }
+  .catalog[data-density='comfortable'] .product-name { font-size: 1.1875rem; }
+  .catalog[data-density='comfortable'] .product-price { font-size: 1rem; }
+}

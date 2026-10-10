@@ -1,0 +1,444 @@
+/* Base: elementos, botones, controles, formularios, editor, vista previa del papel y reglas generales de página. */
+
+::selection { background: color-mix(in srgb, var(--accent) 22%, var(--tile)); color: var(--ink); }
+::placeholder { color: var(--placeholder); opacity: 1; }
+input, textarea { caret-color: var(--accent); }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: var(--text-body)/1.45 var(--font-ui);
+}
+
+h1, h2, h3, h4 { margin: 0; letter-spacing: -0.01em; }
+/* Título de cada panel: lo primero que se lee al buscar algo en la pantalla.
+   h3 se ve igual: son los paneles dentro del panel de impresora, cuyo título ya es h2. */
+h2, h3 { font-size: var(--text-title); font-weight: 650; line-height: 1.25; color: var(--ink); }
+/* Subtítulo dentro de un panel ("Intensidad"): rótulo en mayúsculas, subordinado al título */
+h4 {
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { font-size: 1.25rem; white-space: nowrap; }
+.tabs { display: flex; gap: 4px; }
+.tabs button {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+  padding: 7px 14px;
+  font-weight: 500;
+}
+.tabs button:hover:not(:disabled) { color: var(--ink); background: var(--surface-2); transform: none; }
+.tabs button[aria-current='page'] { color: var(--ink); background: var(--tile); border-color: var(--line-strong); font-weight: 600; }
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  align-items: start;
+  align-content: start;
+}
+
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row { display: flex; gap: 8px; align-items: center; }
+.row.wrap { flex-wrap: wrap; }
+
+/* Botones */
+button {
+  font: inherit;
+  font-size: var(--text-meta);
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+  padding: 7px 12px;
+  transition: transform var(--duration-fast), background var(--duration-fast), opacity var(--duration-fast);
+}
+button:hover:not(:disabled) { transform: translateY(-1px); }
+button:active:not(:disabled) { transform: translateY(0); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Desactivado sin transparencia: se ve apagado (gris, sin el rojo) pero el texto se sigue leyendo al sol */
+button:disabled {
+  cursor: not-allowed;
+  background: var(--disabled-bg);
+  border-color: var(--disabled-bg);
+  color: var(--disabled-ink);
+}
+button.secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+button.secondary:disabled { background: transparent; border-style: dashed; color: var(--disabled-ink); }
+button.link:disabled, button.icon:disabled { background: none; border-color: transparent; }
+button.secondary:hover:not(:disabled) { border-color: var(--ink); }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  padding: 11px 22px;
+  font-size: var(--text-body);
+}
+button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+/* .primary pisaría a button:disabled (misma especificidad, va después): sin productos el botón no debe verse en rojo */
+button.primary:disabled { background: var(--disabled-bg); border-color: var(--disabled-bg); color: var(--disabled-ink); }
+button.link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+button.icon {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+  padding: 2px 8px;
+}
+button.icon:hover:not(:disabled) { color: var(--ink); background: var(--surface-2); }
+button.icon.danger:hover:not(:disabled) { color: var(--accent); }
+
+/* Control segmentado */
+.segmented {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 2px;
+}
+.segmented button {
+  flex: 1;
+  background: transparent;
+  color: var(--ink-soft);
+  border: none;
+  padding: 6px 10px;
+}
+.segmented button[aria-checked='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-control);
+}
+.segmented.small button { padding: 3px 8px; font-size: var(--text-meta); }
+
+/* Estado de conexión */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-meta);
+  padding: 8px 10px;
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+}
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-soft); flex: none; }
+.status.is-on .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+.status .link { margin-left: auto; }
+
+.hint { margin: 0; font-size: var(--text-meta); color: var(--ink-soft); }
+.warning {
+  margin: 0;
+  font-size: var(--text-meta);
+  padding: 8px 10px;
+  border-radius: var(--radius-s);
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+/* Formularios */
+input:not([type='checkbox']):not([type='range']), textarea, select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--tile);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  padding: 7px 9px;
+  width: 100%;
+}
+textarea { font-family: var(--font-mono); font-size: var(--text-meta); resize: vertical; }
+select, input[type='number'] { width: auto; }
+input[type='number'] { width: 72px; }
+input[type='checkbox'], input[type='range'] { accent-color: var(--accent); }
+label.check, label.inline { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-meta); }
+
+/* Editor */
+.editor-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.add-bar { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.blocks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+}
+.block header { display: flex; justify-content: space-between; align-items: center; }
+.block-type { font-size: var(--text-label); font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+.block-actions { display: flex; gap: 2px; }
+.empty { color: var(--ink-soft); text-align: center; padding: 32px 0; margin: 0; }
+
+/* Vista previa del ticket */
+.col-preview {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: calc(100vh - 40px);
+}
+.preview-scroll { overflow: auto; padding: 4px 12px 24px; }
+.paper {
+  /* Un carácter monoespaciado mide ~0.6em; 0.625 deja margen para que quepan --chars por línea. */
+  --char-size: calc(100cqw / var(--chars) / 0.625);
+  --feed-line: calc(var(--char-size) * 1.25);
+  background: var(--paper);
+  color: var(--paper-ink);
+  padding: 20px 0 8px;
+  box-shadow: var(--shadow-paper);
+  font-family: var(--font-mono);
+  position: relative;
+  container-type: inline-size;
+}
+.paper .p-text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--char-size);
+  line-height: 1.25;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.paper .p-qr, .paper .p-image { display: flex; padding: 4px 0; }
+.paper img { display: block; image-rendering: pixelated; max-width: 100%; height: auto; }
+.qr-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: repeating-conic-gradient(var(--paper-ink) 0 25%, var(--paper) 0 50%) 0 0 / 12px 12px;
+  color: var(--paper-ink);
+  max-width: 100%;
+}
+.qr-placeholder span, .qr-placeholder small {
+  background: var(--paper);
+  padding: 1px 6px;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qr-placeholder span { font-weight: 700; }
+.tear {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 8px;
+  background:
+    linear-gradient(-45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 8px,
+    linear-gradient(45deg, transparent 6px, var(--paper) 0) 0 0 / 12px 8px;
+}
+
+.print-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.print-bar small { color: var(--ink-soft); }
+.print-bar .ok { color: var(--ok); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  max-width: calc(100vw - 32px);
+  background: var(--ink);
+  color: var(--surface);
+  padding: 12px 16px;
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-float);
+}
+.toast .link { color: var(--surface); }
+
+
+@media (max-width: 720px) {
+  .topbar { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+  .col-preview { min-width: 0; }
+  .preview-scroll { padding: 4px 0 24px; max-width: 100%; }
+  .paper { max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+.status-text { display: flex; flex-direction: column; min-width: 0; }
+.status-text small { color: var(--ink-soft); font-size: var(--text-meta); }
+
+/* Páginas: contenido principal + vista previa */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: start;
+  min-width: 0;
+}
+
+.count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--text-label);
+  letter-spacing: 0;
+}
+input.search { width: min(260px, 100%); }
+
+/* Formularios */
+.form .row { align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; font-size: var(--text-meta); color: var(--ink-soft); }
+/* Más específico que la regla general de input (que hereda los 13 px de la etiqueta) */
+.field input:not([type='checkbox']):not([type='range']), .field textarea { color: var(--ink); font-size: var(--text-body); }
+.field textarea { font-family: var(--font-ui); }
+.ok-text { margin: 0; font-size: var(--text-meta); color: var(--ok); }
+button.danger-solid { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* Venta */
+.catalog {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.product-tile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  background: var(--tile);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  padding: 10px 12px;
+}
+.product-tile:hover:not(:disabled) { border-color: var(--ink); }
+.product-tile:active:not(:disabled) { background: color-mix(in srgb, var(--accent) 14%, var(--tile)); border-color: var(--accent); }
+/* Nombres largos sin espacios no rompen las baldosas */
+.product-name { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.product-price { color: var(--ink-soft); font-variant-numeric: tabular-nums; font-size: var(--text-meta); }
+/* Ya en la venta: borde de tinta y la cantidad a la derecha, en la fila del precio */
+.product-tile.is-in-cart { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.tile-qty {
+  flex: none;
+  min-width: 2em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--tile);
+  font-size: var(--text-meta);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+/* Precio con su signo dentro del campo: el ejemplo ya no parece un valor escrito */
+.money-input { position: relative; display: flex; }
+.money-input::before {
+  content: '$';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-soft);
+  font-size: var(--text-body);
+  pointer-events: none;
+}
+.field .money-input input { flex: 1; min-width: 0; padding-left: 22px; }
+
+.cart { container: cart / inline-size; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.cart-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.cart-lines li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cart-name {
+  /* Hasta dos líneas: el nombre completo importa más que una fila perfectamente alineada */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.qty { display: inline-flex; align-items: center; }
+
+.preview-empty {
+  width: 320px;
+  max-width: 100%;
+  margin: 0;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--ink-soft);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-m);
+}
+.empty button { margin-top: 8px; }
+
+/* Al final para que tenga prioridad sobre las reglas base de .page. */
+@media (max-width: 1280px) {
+  .page { grid-template-columns: minmax(0, 1fr); }
+  .col-preview { position: static; max-height: none; align-items: center; }
+}
+
+@media (max-width: 720px) {
+  .catalog { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
+
+
+.icon-svg { display: block; flex: none; }
+button:has(> .icon-svg) { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
